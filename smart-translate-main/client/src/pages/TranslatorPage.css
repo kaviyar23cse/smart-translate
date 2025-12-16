@@ -1,0 +1,108 @@
+/* Styles specific to the Translator Page */
+.dropzone {
+  border: 2px dashed #374151; border-radius: 16px; padding: 32px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(17, 24, 39, 0.6));
+  color: #cbd5e1; display: flex; flex-direction: column; align-items: center;
+  gap: 16px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center; position: relative; overflow: hidden;
+}
+.dropzone.active { border-color: #22d3ee; background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(59, 130, 246, 0.1)); transform: scale(1.02); box-shadow: 0 10px 30px rgba(34, 211, 238, 0.2); }
+.dropzone:hover .dz-icon { transform: translateY(-2px); }
+.hidden-file { display: none; }
+.link { color: #60a5fa; text-decoration: underline; transition: color 0.2s ease; }
+.link:hover { color: #93c5fd; }
+.controls { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.control {
+  display: inline-flex; align-items: center; gap: 10px; padding: 12px 16px;
+  border: 1px solid var(--border-light); border-radius: 12px;
+  background: linear-gradient(135deg, rgba(14, 21, 39, 0.8), rgba(17, 24, 39, 0.6));
+  backdrop-filter: blur(10px); transition: all 0.3s ease;
+  position: relative;
+}
+.control select {
+  background: transparent; color: var(--fg); border: none; outline: none;
+  font-size: 14px; padding: 10px 12px; border-radius: 10px;
+  min-width: 150px; appearance: none; cursor: pointer; transition: all 0.2s ease;
+  -webkit-appearance: none; -moz-appearance: none;
+}
+.control select option {
+  background-color: var(--card); /* Dark background for options */
+  color: var(--fg); /* Light text color for options */
+  padding: 10px;
+}
+.control select option:hover {
+  background-color: var(--border-light);
+}
+.control::after {
+  content: '▼'; position: absolute; right: 28px; top: 50%;
+  transform: translateY(-50%); color: var(--muted);
+  pointer-events: none;
+}
+.area {
+  width: 100%; padding: 16px; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(14, 21, 39, 0.9), rgba(17, 24, 39, 0.7));
+  color: #dbeafe; border: 1px solid var(--border); resize: none;
+  min-height: 220px; height: clamp(220px, 40vh, 420px); overflow: auto;
+  line-height: 1.7; font-size: 15px; transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+.audio-player { margin-top: 16px; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: linear-gradient(135deg, rgba(15, 23, 42, 0.6), rgba(17, 24, 39, 0.4)); border-radius: 16px; border: 1px solid var(--border-light); backdrop-filter: blur(10px); }
+.square-btn { width: 48px; height: 48px; padding: 0; border-radius: 50%; }
+
+/* Layout Fix: Use grid for panes to ensure side-by-side layout on larger screens */
+.panes { 
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-top: 8px;
+    justify-content: center;
+}
+@media (min-width: 900px) {
+    .panes {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+/* Layout Fix: Use flexbox for rows to space out buttons */
+.row { 
+    display: flex;
+    gap: 16px; 
+    flex-wrap: wrap; 
+    margin-top: 20px;
+    justify-content: center; 
+}
+.tiny-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 12px;
+    justify-content: space-between;
+    width: 100%;
+}
+.translated-output { white-space: pre-wrap; }
+
+/* Tooltip for word translations */
+.tooltip { position: relative; cursor: help; border-bottom: 1px dotted rgba(156, 163, 175, 0.6); transition: all 0.2s ease; }
+.tooltip:hover {
+    color: var(--accent);
+}
+.tooltip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(31, 41, 55, 0.95));
+  color: #f9fafb;
+  padding: 8px 12px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  max-width: 320px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 30;
+  border: 1px solid var(--border-light);
+  backdrop-filter: blur(10px);
+}
+.tooltip:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
