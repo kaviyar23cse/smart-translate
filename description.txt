@@ -1,0 +1,149 @@
+Smart Translator :Full Story (What the app “is”, end-to-end)
+
+A user lands on the marketing homepage, signs up or logs in, then enters the Translator workspace to convert content into an Indian language (Hindi/Tamil/Bengali/Gujarati/Telugu).
+They can either type/paste text or upload a file (TXT/PDF/image). The backend extracts text (TXT read directly; PDFs via PyMuPDF text extraction; images via OCR).
+The user chooses a target language and translates the document.
+After translation, the user can:
+Hover for word tips (tooltip meanings): the UI tokenizes the translated output and asks the backend to translate each token to English for quick meaning hints.
+Summarize (AI): the backend uses Gemini to produce a clear summary in the selected language (with a safe fallback when AI is unavailable).
+Ask AI (Document Q&A): the user asks questions about the extracted/translated document and the backend responds in the selected language.
+Ask by mic: the question box supports speech-to-text using the browser Web Speech API (where available).
+Listen (TTS): the UI requests an MP3 from the backend and plays it with pause/resume/stop controls (used for translated text and AI answers).
+Every time a logged-in user translates, the app saves the original + translated text to their personal history. The History page lists those items and supports per-item delete and “clear all”.
+Architecture (What runs where)
+
+Frontend (React SPA via Vite): routing + UI + API calls
+App router and auth gate: App.jsx
+Session-backed auth state: AuthContext.jsx
+Main workflow UI: TranslatorPage.jsx
+History UI: HistoryPage.jsx
+API base URL is configurable: config.js
+Backend (Node/Express): REST endpoints + Mongo persistence + calls out to Python + Google Translate + gTTS
+Main server & endpoints: server.js
+Auth routes: auth.js
+History routes: history.js
+Database (MongoDB via Mongoose): two collections (User and History)
+Schemas: User.js, History.js
+Python utilities (invoked by Node) for extraction:
+OCR: ocr.py (EasyOCR)
+PDF text extraction: pdf_reader.py (PyMuPDF)
+A summarizer script exists but is not wired into the server route right now: summarizer.py
+Technical Component Flow (clear “component-by-component” request flow)
+
+Signup / Login
+UI:
+Signup: SignupPage.jsx calls POST /api/auth/register, then calls login.
+Login: LoginPage.jsx calls AuthContext login().
+Backend:
+Register & login: auth.js
+Passwords are hashed with bcrypt; JWT returned contains sub = user._id.
+Storage:
+Token + user are stored in sessionStorage (tab/session scoped) in AuthContext.jsx.
+Upload → Extract text
+UI:
+TranslatorPage.jsx builds FormData and calls POST /upload.
+Backend:
+server.js uses Multer to store a temp file under uploads.
+Branching by extension:
+.txt: fs.readFileSync() and return
+.pdf: runs python [pdf_reader.py](http://_vscodecontentref_/32) <filePath>
+else (images): runs python [ocr.py](http://_vscodecontentref_/33) <filePath>
+Temp upload is deleted in a finally block.
+Translate (friendly vs formal)
+UI:
+TranslatorPage.jsx calls POST /translate with { text, to: lang }.
+Backend:
+server.js:
+Calls the Google “gtx” translate endpoint (configured by TRANSLATE_API_URL) and returns concatenated translation segments.
+Save to history
+UI:
+After successful translation, TranslatorPage.jsx calls POST /api/history with Authorization: Bearer <token>.
+Backend:
+history.js verifies JWT and writes a History document tied to user.
+Word tooltips (token translations)
+UI:
+When “Word tips” is enabled, TranslatorPage.jsx tokenizes the translated text, strips punctuation, and calls POST /translateTokens to get an English mapping.
+Backend:
+server.js tries a bulk translate by joining tokens with \n. If the response doesn’t align, it falls back to per-token requests.
+Note: there’s also a POST /glossary endpoint with an in-memory cache, but the UI currently uses /translateTokens instead.
+Summarize
+UI:
+Calls POST /summarize with translated text, then translates the summary back to English using POST /translate for an “English Summary” pane.
+Backend:
+server.js uses Gemini (configured via GEMINI_API_KEY / GEMINI_MODEL) to generate a short, plain-text summary.
+If AI is unavailable or rate-limited, it falls back to a simple deterministic summary so the app still works.
+
+Ask AI (Document Q&A)
+UI:
+Calls POST /ask with { document, question, lang }.
+The question can be typed or dictated via the mic (speech-to-text).
+Backend:
+server.js uses Gemini to answer using only the provided document context and returns a plain-text answer suitable for TTS.
+TTS (Text-to-Speech)
+UI:
+Calls POST /tts, receives an MP3 blob, creates an object URL, and plays via new Audio(url) with pause/resume/stop.
+Backend:
+server.js uses node-gtts to generate an MP3 and sendFile() it back.
+ER Diagram (from actual Mongoose schemas)
+
+Why these technologies were used (and what alternatives would change)
+
+React + Vite (SPA) (package.json)
+
+Why it fits: fast dev server + simple SPA routing + lightweight deployment (see Vercel rewrite rules in vercel.json).
+Alternatives:
+Next.js: SSR, built-in API routes, better SEO; more framework weight and different deployment model.
+CRA: older, slower tooling; Vite is now a more modern default for many SPAs.
+Express API (Node) (server.js)
+
+Why it fits: straightforward REST endpoints; easy integration with Multer uploads and child-process Python calls.
+Alternatives:
+Fastify/NestJS: more structure, potentially better performance and typing patterns; higher framework overhead.
+MongoDB + Mongoose (User.js, History.js)
+
+Why it fits: the data model is simple (users + translation records) and document-oriented storage works well.
+Alternatives:
+PostgreSQL: stronger relational constraints and reporting; requires migrations/SQL modeling.
+Firebase/Firestore: quicker auth + data setup; less control over backend logic and vendor coupling.
+JWT auth (auth.js, history.js)
+
+Why it fits: stateless API auth, easy to attach to requests from the SPA.
+Alternatives:
+Server sessions/cookies: simpler invalidation and CSRF story in some setups; requires stateful session store and careful cookie config for cross-origin.
+Document extraction via Python (EasyOCR + PyMuPDF) (ocr.py, pdf_reader.py)
+
+Why it fits: good OCR accuracy without standing up separate services; PyMuPDF is reliable for extracting embedded PDF text.
+Alternatives:
+Tesseract OCR: very common; often needs more tuning for accuracy/layout.
+Cloud OCR (Google Vision / Azure / AWS Textract): higher accuracy and layout understanding; costs money and requires credentials/network dependency.
+pdfminer.six for PDFs: pure text extraction; can be slower/more brittle on complex PDFs vs PyMuPDF.
+Translation via Google “gtx” endpoint (server.js, configured in .env.example)
+
+Why it fits: no API key required and easy to call.
+Tradeoff: it’s not the official paid Cloud Translate API; reliability/rate limits can be an issue at scale.
+Alternatives:
+Official Google Cloud Translate: paid, stable, SLA-ish.
+Azure Translator / DeepL: different quality/cost tradeoffs.
+Local models: privacy/offline; larger hosting burden.
+TTS via node-gtts (server.js)
+
+Why it fits: returns a simple MP3 to the browser; avoids inconsistent browser voices.
+Alternatives:
+Web Speech API: no backend audio generation; but browser/device voice quality varies and recording/downloading audio is harder.
+Cloud TTS: higher quality voices; requires keys/cost.
+How this differs from “existing solutions”
+
+Compared to a basic “translator app”:
+Adds file ingestion (PDF/image OCR), not just typed text.
+Adds history tied to accounts (multi-user persistence, delete/clear).
+Adds a reading workflow: translate → summarize → listen (TTS).
+Adds word-level tooltip support by token translation (a lightweight “learn as you read” feature).
+Adds a unique Friendly simplification mode before translation (improves readability and reduces “over-formal English” artifacts that can translate awkwardly).
+Notable implementation notes / limitations (from the code)
+
+AI features require a Gemini API key (set in environment variables on your hosting provider; do not commit server/.env).
+/tts writes unique filenames to avoid collisions in multi-user scenarios.
+OCR is CPU-based (gpu=False), which is portable but can be slow on large images.
+If you want, I can also generate a clean architecture write-up as a new doc file (e.g., docs/architecture.md) and include the Mermaid ER diagram + a sequence diagram for “Upload → Translate → Save History”.
+
+GPT-5.2 • 1x

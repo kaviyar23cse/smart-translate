@@ -1,0 +1,203 @@
+/* Styles for Login Page */
+.login-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.login-card {
+  max-width: 400px;
+  width: 100%;
+  padding: 32px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.login-title {
+  font-size: 16px;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(14, 21, 39, 0.9), rgba(17, 24, 39, 0.7));
+  color: #dbeafe;
+  border: 1px solid var(--border);
+  line-height: 1.7;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.row-center {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.link {
+  color: var(--accent);
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.link:hover {
+  color: var(--accent-600);
+}
+
+/* ========== Login Loading Overlay ========== */
+.login-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 15, 30, 0.9);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: loginFadeIn 0.3s ease;
+}
+
+@keyframes loginFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.login-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 48px;
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(31, 41, 55, 0.9));
+  border-radius: 24px;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6), 0 0 80px rgba(99, 102, 241, 0.2);
+  min-width: 280px;
+}
+
+.login-spinner-container {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+
+.login-spinner-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  animation: loginSpin 1.5s linear infinite;
+}
+
+.login-spinner-ring:nth-child(1) {
+  border-top-color: #6366f1;
+  animation-duration: 1.5s;
+}
+
+.login-spinner-ring:nth-child(2) {
+  width: 52px;
+  height: 52px;
+  top: 9px;
+  left: 9px;
+  border-right-color: #22d3ee;
+  animation-duration: 1.2s;
+  animation-direction: reverse;
+}
+
+.login-spinner-ring:nth-child(3) {
+  width: 34px;
+  height: 34px;
+  top: 18px;
+  left: 18px;
+  border-bottom-color: #a855f7;
+  animation-duration: 0.9s;
+}
+
+.login-spinner-pulse {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 27px;
+  left: 27px;
+  background: linear-gradient(135deg, #6366f1, #22d3ee);
+  border-radius: 50%;
+  animation: loginPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loginSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes loginPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+.login-loading-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #f1f5f9;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.login-loading-subtitle {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0;
+  text-align: center;
+}
+
+.login-progress-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(51, 65, 85, 0.6);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.login-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #22d3ee, #a855f7);
+  background-size: 200% 100%;
+  border-radius: 3px;
+  animation: loginShimmer 1.8s linear infinite;
+  width: 100%;
+}
+
+@keyframes loginShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
