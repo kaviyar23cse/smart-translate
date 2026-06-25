@@ -81,6 +81,91 @@ cd client
 npm install
 ```
 
+## Deployment Checklist
+
+Use this when you want to push the project to GitHub and host it live.
+
+### 1. Push the code to GitHub
+
+```bash
+git status
+git add .
+git commit -m "Prepare project for deployment"
+git push origin main
+```
+
+If your branch name is not `main`, replace it with your branch name.
+
+### 2. Deploy the backend on Render
+
+Render should point to the `server` folder because the backend runs Express and Python-based OCR/PDF helpers.
+
+Required Render settings:
+
+- Root Directory: `server`
+- Build Command: `npm install && pip install -r requirements.txt`
+- Start Command: `npm start`
+
+Add these environment variables on Render:
+
+```env
+MONGO_URI=your-mongodb-atlas-uri
+JWT_SECRET=your-strong-secret
+GEMINI_API_KEY=your-gemini-key
+GEMINI_MODEL=gemini-flash-latest
+PORT=5000
+TRANSLATE_API_URL=https://translate.googleapis.com/translate_a/single
+```
+
+After deployment, copy the backend URL from Render.
+
+### 3. Deploy the frontend on Vercel
+
+Vercel should point to the `client` folder.
+
+Required Vercel settings:
+
+- Root Directory: `client`
+- Build Command: `npm run build`
+- Output Directory: `dist`
+
+Add this environment variable on Vercel:
+
+```env
+VITE_API_URL=https://your-render-backend-url.onrender.com
+```
+
+### 4. Add the live links to GitHub
+
+After deployment, update your GitHub README or repository description with:
+
+- GitHub repository link
+- Live frontend link from Vercel
+- Backend link from Render
+
+Example section for README:
+
+```md
+## Live Links
+
+- Frontend: https://your-project.vercel.app
+- Backend: https://your-project.onrender.com
+- GitHub: https://github.com/your-username/your-repo
+```
+
+### 5. Verify everything works
+
+Test these flows after deployment:
+
+- Sign up and log in
+- Upload PDF or image
+- Translate text
+- Save history
+- Open history page
+- Check Gemini features if `GEMINI_API_KEY` is set
+
+If upload fails on Render, the usual cause is missing Python packages or the host not supporting Python execution correctly.
+
 ## Running the Application
 
 Start the server (port 5000):
